@@ -78,6 +78,7 @@ namespace PagoElectronico.ABM_Rol
             boton_ingresar.Size = new System.Drawing.Size(75, 23);
             boton_ingresar.TabIndex = 0;
             boton_ingresar.Text = "Ingresar";
+            boton_ingresar.Click += new System.EventHandler(click_ingresar);
 
 
             boton_salir.Location = new System.Drawing.Point(17, 128);
@@ -85,7 +86,7 @@ namespace PagoElectronico.ABM_Rol
             boton_salir.Size = new System.Drawing.Size(75, 23);
             boton_salir.TabIndex = 7;
             boton_salir.Text = "Salir";
-            boton_salir.Click += new System.EventHandler(salir);
+            boton_salir.Click += new System.EventHandler(click_salir);
 
 
             AcceptButton = boton_ingresar;
