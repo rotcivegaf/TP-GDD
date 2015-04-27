@@ -15,5 +15,10 @@ namespace PagoElectronico.ABM_Rol
         {
             InitializeComponent();
         }
+
+        private void salir(object sender, EventArgs e)
+        {
+            Application.Exit();
+        }
     }
 }
