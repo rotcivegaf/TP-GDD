@@ -1,0 +1,7 @@
+C:\Documents and Settings\UsuarioAdmin\Escritorio\TP-GDD.git\trunk\Aplicacion Desktop\PagoElectronico\PagoElectronico\obj\Release\ResolveAssemblyReference.cache
+C:\Documents and Settings\UsuarioAdmin\Escritorio\TP-GDD.git\trunk\Aplicacion Desktop\PagoElectronico\PagoElectronico\obj\Release\PagoElectronico.Properties.Resources.resources
+C:\Documents and Settings\UsuarioAdmin\Escritorio\TP-GDD.git\trunk\Aplicacion Desktop\PagoElectronico\PagoElectronico\obj\Release\PagoElectronico.csproj.GenerateResource.Cache
+C:\Documents and Settings\UsuarioAdmin\Escritorio\TP-GDD.git\trunk\Aplicacion Desktop\PagoElectronico\PagoElectronico\bin\Release\PagoElectronico.exe
+C:\Documents and Settings\UsuarioAdmin\Escritorio\TP-GDD.git\trunk\Aplicacion Desktop\PagoElectronico\PagoElectronico\bin\Release\PagoElectronico.pdb
+C:\Documents and Settings\UsuarioAdmin\Escritorio\TP-GDD.git\trunk\Aplicacion Desktop\PagoElectronico\PagoElectronico\obj\Release\PagoElectronico.exe
+C:\Documents and Settings\UsuarioAdmin\Escritorio\TP-GDD.git\trunk\Aplicacion Desktop\PagoElectronico\PagoElectronico\obj\Release\PagoElectronico.pdb
