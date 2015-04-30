@@ -14,21 +14,48 @@ GO
 
 --Se borran todos los objetos previamente existentes
 
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'CASI_COMPILA.Cuentas') AND type in (N'U')) DROP TABLE CASI_COMPILA.Cuentas
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'CASI_COMPILA.Roles') AND type in (N'U')) DROP TABLE CASI_COMPILA.Roles
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'CASI_COMPILA.Funcionalidades') AND type in (N'U')) DROP TABLE CASI_COMPILA.Funcionalidades
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'CASI_COMPILA.Funcionalidades_Rol') AND type in (N'U')) DROP TABLE CASI_COMPILA.Funcionalidades_Rol
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'CASI_COMPILA.Usuarios') AND type in (N'U')) DROP TABLE CASI_COMPILA.Usuarios
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'CASI_COMPILA.Clientes') AND type in (N'U')) DROP TABLE CASI_COMPILA.Clientes
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'CASI_COMPILA.Paises') AND type in (N'U')) DROP TABLE CASI_COMPILA.Paises
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'CASI_COMPILA.Tipos_Documento') AND type in (N'U')) DROP TABLE CASI_COMPILA.Tipos_Documento
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'CASI_COMPILA.Bancos') AND type in (N'U')) DROP TABLE CASI_COMPILA.Bancos
-IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'Cargar_Rol') DROP PROCEDURE CASI_COMPILA.Cargar_Rol
-IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'Asociar_Rol_Func') DROP PROCEDURE CASI_COMPILA.Asociar_Rol_Func
-IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'Desasociar_Rol_Func') DROP PROCEDURE CASI_COMPILA.Desasociar_Rol_Func
+IF OBJECT_ID ('CASI_COMPILA.Cuentas') IS NOT NULL DROP TABLE CASI_COMPILA.Cuentas
+IF OBJECT_ID ('CASI_COMPILA.Tipos_Cuentas') IS NOT NULL DROP TABLE CASI_COMPILA.Tipos_Cuentas
+IF OBJECT_ID ('CASI_COMPILA.Funcionalidades_Rol') IS NOT NULL DROP TABLE CASI_COMPILA.Funcionalidades_Rol
+IF OBJECT_ID ('CASI_COMPILA.Funcionalidades') IS NOT NULL DROP TABLE CASI_COMPILA.Funcionalidades
+IF OBJECT_ID ('CASI_COMPILA.Usuarios') IS NOT NULL DROP TABLE CASI_COMPILA.Usuarios
+IF OBJECT_ID ('CASI_COMPILA.Roles') IS NOT NULL DROP TABLE CASI_COMPILA.Roles
+IF OBJECT_ID ('CASI_COMPILA.Clientes') IS NOT NULL DROP TABLE CASI_COMPILA.Clientes
+IF OBJECT_ID ('CASI_COMPILA.Paises') IS NOT NULL DROP TABLE CASI_COMPILA.Paises
+IF OBJECT_ID ('CASI_COMPILA.Tipos_Documento') IS NOT NULL DROP TABLE CASI_COMPILA.Tipos_Documento
+IF OBJECT_ID ('CASI_COMPILA.Bancos') IS NOT NULL DROP TABLE CASI_COMPILA.Bancos
+IF OBJECT_ID ('CASI_COMPILA.Alta_Rol') IS NOT NULL DROP PROCEDURE CASI_COMPILA.Alta_Rol
+IF OBJECT_ID ('CASI_COMPILA.Mod_Estado_Rol') IS NOT NULL DROP PROCEDURE CASI_COMPILA.Mod_Estado_Rol
+IF OBJECT_ID ('CASI_COMPILA.Asociar_Rol_Func') IS NOT NULL DROP PROCEDURE CASI_COMPILA.Asociar_Rol_Func
+IF OBJECT_ID ('CASI_COMPILA.Desasociar_Rol_Func') IS NOT NULL DROP PROCEDURE CASI_COMPILA.Desasociar_Rol_Func
+IF OBJECT_ID ('CASI_COMPILA.Alta_Usuario') IS NOT NULL DROP PROCEDURE CASI_COMPILA.Alta_Usuario
+IF OBJECT_ID ('CASI_COMPILA.Baja_Usuario') IS NOT NULL DROP PROCEDURE CASI_COMPILA.Baja_Usuario
+IF OBJECT_ID ('CASI_COMPILA.Cambiar_Estado') IS NOT NULL DROP FUNCTION CASI_COMPILA.Cambiar_Estado
 
 PRINT 'Tablas eliminadas correctamente'
 GO
+
+
+-------------------------------------------Funciones---------------------------------------
+
+CREATE FUNCTION CASI_COMPILA.Cambiar_Estado(@Estado BIT)
+RETURNS BIT
+AS
+BEGIN
+
+DECLARE @Retorno BIT
+
+IF(@Estado = 0)
+	SET @Retorno = 1
+ELSE
+	SET @Retorno = 0
+	
+RETURN @Retorno
+
+END
+
+GO
+	
 
 --Se crean las tablas y se las carga con los datos correspondientes
 
@@ -86,7 +113,7 @@ GO
 --REVISAR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 CREATE TABLE CASI_COMPILA.Clientes(
-	Cli_Codigo NUMERIC(18,0) IDENTITY(1,1) PRIMARY KEY, --Ver si dejar esto asi
+	Cli_Codigo NUMERIC(18,0) IDENTITY(1,1) PRIMARY KEY, --Ver si dejar esto asi (no hay nro de doc)
 	Cli_Nombre VARCHAR(255) NOT NULL,
 	Cli_Apellido VARCHAR(255) NOT NULL,
 	Cli_Pais_Codigo NUMERIC(18,0) NOT NULL FOREIGN KEY REFERENCES CASI_COMPILA.Paises,
@@ -117,9 +144,10 @@ CREATE TABLE CASI_COMPILA.Roles(
 )
 
 GO
---Se crea un procedure para cargar nuevos roles en la base
 
-CREATE PROCEDURE CASI_COMPILA.Cargar_Rol
+--ABM Roles
+
+CREATE PROCEDURE CASI_COMPILA.Alta_Rol
 (@Nombre VARCHAR(50), @Estado BIT)
 AS
 BEGIN
@@ -131,14 +159,26 @@ VALUES
 
 END
 
-PRINT 'Procedure Cargar_Rol creado correctamente'
+GO
+
+CREATE PROCEDURE CASI_COMPILA.Mod_Estado_Rol
+(@Rol_Cod TINYINT)
+AS
+BEGIN
+
+UPDATE CASI_COMPILA.Roles SET Rol_Estado = CASI_COMPILA.Cambiar_Estado(Rol_Estado) WHERE Rol_Cod = @Rol_Cod
+
+END
+
+--Falta la modificacion!!!!
+														
 
 GO
 
 --Se cargan los 2 roles iniciales (Administrador y Cliente)
 
-EXEC CASI_COMPILA.Cargar_Rol @Nombre = 'ADMINISTRADOR', @Estado = 1
-EXEC CASI_COMPILA.Cargar_Rol @Nombre = 'CLIENTE', @Estado = 1
+EXEC CASI_COMPILA.Alta_Rol @Nombre = 'ADMINISTRADOR', @Estado = 1
+EXEC CASI_COMPILA.Alta_Rol @Nombre = 'CLIENTE', @Estado = 1
 
 PRINT 'Tabla Roles creada correctamente'
 
@@ -177,8 +217,6 @@ VALUES
 
 END 
 
-PRINT 'Procedure Asociar_Rol_Func creado correctamente'
-
 GO
 
 --Se crea procedure para quitarle una funcion a un rol
@@ -191,8 +229,6 @@ BEGIN
 DELETE FROM CASI_COMPILA.Funcionalidades_Rol WHERE Rol_Cod = @Rol_Cod AND Func_Cod = @Func_Cod
 
 END 
-
-PRINT 'Procedure Desasociar_Rol_Func creado correctamente'
 
 GO
 
@@ -209,12 +245,41 @@ CREATE TABLE CASI_COMPILA.Usuarios(
 	User_Fecha_Mod DATETIME NOT NULL,
 	User_Preg_Secreta VARCHAR(255) NOT NULL,
 	User_Resp_Secreta VARCHAR(255) NOT NULL,
-	User_Cli_Codigo NUMERIC(18,0) NOT NULL FOREIGN KEY REFERENCES CASI_COMPILA.Clientes
+	User_Cli_Codigo NUMERIC(18,0) UNIQUE FOREIGN KEY REFERENCES CASI_COMPILA.Clientes, --Puede ser null si es admin
+	User_Estado BIT NOT NULL -- 1= ACTIVO 0 = INACTIVO
 	)
 	
---Hay que cargarle usuarios (1 minimo que seria el administrador)
+--Hay que cargarle LOS usuarios (1 por cada cliente + los admin)!!!!!!!!!
 	
 PRINT 'Tabla Usuarios creada correctamente'
+
+GO
+
+--ABM Usuario
+
+CREATE PROCEDURE CASI_COMPILA.Alta_Usuario
+(@Nombre VARCHAR(50), @Password VARCHAR(50), @Rol TINYINT, @PregSecreta VARCHAR(255), 
+@RespSecreta VARCHAR(255), @Cliente NUMERIC(18,0) = NULL) --Si es admin y no es cliente, no se ingresa el parametro
+AS
+BEGIN
+
+INSERT INTO CASI_COMPILA.Usuarios
+(User_Nombre, User_Password, User_Rol_Cod, User_Fecha_Creacion, User_Fecha_Mod, User_Preg_Secreta, User_Resp_Secreta, User_Cli_Codigo,User_Estado)
+VALUES
+(@Nombre, @Password, @Rol, GETDATE(), GETDATE(), @PregSecreta, @RespSecreta, @Cliente, 1)
+
+END
+
+GO
+
+CREATE PROCEDURE CASI_COMPILA.Baja_Usuario
+(@User_Cod NUMERIC(18,0))
+AS
+BEGIN
+
+UPDATE CASI_COMPILA.Usuarios  SET User_Estado = 0, User_Fecha_Mod = GETDATE() WHERE User_Cod = @User_Cod
+
+END
 
 GO		
 
@@ -240,11 +305,13 @@ CREATE TABLE CASI_COMPILA.Cuentas(
 	Cuenta_Cli_Codigo NUMERIC(18,0) NOT NULL FOREIGN KEY REFERENCES CASI_COMPILA.Clientes,
 	Cuenta_Tipo_Cod TINYINT NOT NULL FOREIGN KEY REFERENCES CASI_COMPILA.Tipos_Cuentas
 	)
-	
-
 
 PRINT 'Tabla Cuentas creada correctamente'
 	
+--Hay que cargar los datos de la tabla!!!!
+
+
+
 
 
 
