@@ -303,7 +303,7 @@ CREATE TABLE CASI_COMPILA.Cuentas(
 	Cuenta_Pais_Codigo  NUMERIC(18,0) NOT NULL FOREIGN KEY REFERENCES CASI_COMPILA.Paises,
 	Cuenta_Fecha_Cierre DATETIME,
 	Cuenta_Cli_Codigo NUMERIC(18,0) NOT NULL FOREIGN KEY REFERENCES CASI_COMPILA.Clientes,
-	Cuenta_Tipo_Cod TINYINT NOT NULL FOREIGN KEY REFERENCES CASI_COMPILA.Tipos_Cuentas
+	Cuenta_Tipo_Cod TINYINT FOREIGN KEY REFERENCES CASI_COMPILA.Tipos_Cuentas --Tendria que ser NOT NULL, lo dejo asi xq en la tabla maestra no estan los tipos asociados a cada cuenta
 	)
 
 PRINT 'Tabla Cuentas creada correctamente'
