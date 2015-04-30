@@ -18,6 +18,7 @@ IF OBJECT_ID ('CASI_COMPILA.Cuentas') IS NOT NULL DROP TABLE CASI_COMPILA.Cuenta
 IF OBJECT_ID ('CASI_COMPILA.Tipos_Cuentas') IS NOT NULL DROP TABLE CASI_COMPILA.Tipos_Cuentas
 IF OBJECT_ID ('CASI_COMPILA.Funcionalidades_Rol') IS NOT NULL DROP TABLE CASI_COMPILA.Funcionalidades_Rol
 IF OBJECT_ID ('CASI_COMPILA.Funcionalidades') IS NOT NULL DROP TABLE CASI_COMPILA.Funcionalidades
+IF OBJECT_ID ('CASI_COMPILA.Usuarios_Rol') IS NOT NULL DROP TABLE CASI_COMPILA.Usuarios_Rol
 IF OBJECT_ID ('CASI_COMPILA.Usuarios') IS NOT NULL DROP TABLE CASI_COMPILA.Usuarios
 IF OBJECT_ID ('CASI_COMPILA.Roles') IS NOT NULL DROP TABLE CASI_COMPILA.Roles
 IF OBJECT_ID ('CASI_COMPILA.Clientes') IS NOT NULL DROP TABLE CASI_COMPILA.Clientes
@@ -30,6 +31,7 @@ IF OBJECT_ID ('CASI_COMPILA.Asociar_Rol_Func') IS NOT NULL DROP PROCEDURE CASI_C
 IF OBJECT_ID ('CASI_COMPILA.Desasociar_Rol_Func') IS NOT NULL DROP PROCEDURE CASI_COMPILA.Desasociar_Rol_Func
 IF OBJECT_ID ('CASI_COMPILA.Alta_Usuario') IS NOT NULL DROP PROCEDURE CASI_COMPILA.Alta_Usuario
 IF OBJECT_ID ('CASI_COMPILA.Baja_Usuario') IS NOT NULL DROP PROCEDURE CASI_COMPILA.Baja_Usuario
+IF OBJECT_ID ('CASI_COMPILA.Asignar_Rol_Usuario') IS NOT NULL DROP PROCEDURE CASI_COMPILA.Asignar_Rol_Usuario
 IF OBJECT_ID ('CASI_COMPILA.Cambiar_Estado') IS NOT NULL DROP FUNCTION CASI_COMPILA.Cambiar_Estado
 
 PRINT 'Tablas eliminadas correctamente'
@@ -127,8 +129,13 @@ CREATE TABLE CASI_COMPILA.Clientes(
 	)
 	
 INSERT INTO CASI_COMPILA.Clientes
-(Cli_Nombre, Cli_Apellido, Cli_Pais_Codigo, Cli_Tipo_Doc_Cod, Cli_Dom_Calle, Cli_Dom_Nro, Cli_Dom_Piso, Cli_Dom_Depto, Cli_Fecha_Nac, Cli_Mail)
-SELECT DISTINCT Cli_Nombre, Cli_Apellido, Cli_Pais_Codigo, Cli_Tipo_Doc_Cod, Cli_Dom_Calle, Cli_Dom_Nro, Cli_Dom_Piso, Cli_Dom_Depto, Cli_Fecha_Nac, Cli_Mail FROM gd_esquema.Maestra
+(Cli_Nombre, Cli_Apellido, Cli_Pais_Codigo, Cli_Tipo_Doc_Cod, Cli_Dom_Calle, 
+Cli_Dom_Nro, Cli_Dom_Piso, Cli_Dom_Depto, Cli_Fecha_Nac, Cli_Mail)
+SELECT DISTINCT Cli_Nombre, Cli_Apellido, Cli_Pais_Codigo, Cli_Tipo_Doc_Cod, Cli_Dom_Calle, 
+Cli_Dom_Nro, Cli_Dom_Piso, Cli_Dom_Depto, Cli_Fecha_Nac, Cli_Mail FROM gd_esquema.Maestra
+
+
+--En esta tabla hay que generar un indice para mayor performance
 
 
 PRINT 'Tabla Clientes creada correctamente'
@@ -250,12 +257,40 @@ CREATE TABLE CASI_COMPILA.Usuarios(
 	)
 	
 --Hay que cargarle LOS usuarios (1 por cada cliente + los admin)!!!!!!!!!
+
+GO
+
+--Entre usuarios y roles hay una relacion muchos a muchos
+
+CREATE TABLE CASI_COMPILA.Usuarios_Rol(
+	User_Cod NUMERIC(18,0) NOT NULL FOREIGN KEY REFERENCES CASI_COMPILA.Usuarios,
+	Rol_Cod TINYINT NOT NULL FOREIGN KEY REFERENCES CASI_COMPILA.Roles,
+	User_Rol_Estado BIT NOT NULL  --Un rol puede estar deshabilitado para un user, pero no implica que el rol se desactive en todo el sistema
+)
+
+GO
 	
-PRINT 'Tabla Usuarios creada correctamente'
+PRINT 'Tabla Usuarios y Tabla Usuarios_Rol creada correctamente'
 
 GO
 
 --ABM Usuario
+
+--Asignar un rol a un usuario
+
+CREATE PROCEDURE CASI_COMPILA.Asignar_Rol_Usuario
+(@Usuario NUMERIC(18,0), @Rol TINYINT)
+AS
+BEGIN
+
+INSERT INTO CASI_COMPILA.Usuarios_Rol
+(User_Cod, Rol_Cod, User_Rol_Estado)
+VALUES
+(@Usuario, @Rol, 1) --Se asume que cuando se asigna un rol este se activa por defecto
+
+END
+
+GO
 
 CREATE PROCEDURE CASI_COMPILA.Alta_Usuario
 (@Nombre VARCHAR(50), @Password VARCHAR(50), @Rol TINYINT, @PregSecreta VARCHAR(255), 
@@ -264,9 +299,9 @@ AS
 BEGIN
 
 INSERT INTO CASI_COMPILA.Usuarios
-(User_Nombre, User_Password, User_Rol_Cod, User_Fecha_Creacion, User_Fecha_Mod, User_Preg_Secreta, User_Resp_Secreta, User_Cli_Codigo,User_Estado)
+(User_Nombre, User_Password, User_Fecha_Creacion, User_Fecha_Mod, User_Preg_Secreta, User_Resp_Secreta, User_Cli_Codigo,User_Estado)
 VALUES
-(@Nombre, @Password, @Rol, GETDATE(), GETDATE(), @PregSecreta, @RespSecreta, @Cliente, 1)
+(@Nombre, @Password, GETDATE(), GETDATE(), @PregSecreta, @RespSecreta, @Cliente, 1) --El rol se asigna aparte
 
 END
 
@@ -281,7 +316,10 @@ UPDATE CASI_COMPILA.Usuarios  SET User_Estado = 0, User_Fecha_Mod = GETDATE() WH
 
 END
 
-GO		
+GO
+
+
+		
 
 -----------------------------------Cuentas---------------------------------------------
 
