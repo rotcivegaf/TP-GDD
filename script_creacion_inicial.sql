@@ -102,7 +102,8 @@ CREATE TABLE CASI_COMPILA.Bancos (
 
 INSERT INTO CASI_COMPILA.Bancos
 (Banco_Codigo, Banco_Nombre, Banco_Direccion)
-SELECT DISTINCT Banco_Cogido, Banco_Nombre, Banco_Direccion FROM gd_esquema.Maestra WHERE Banco_Cogido IS NOT NULL
+SELECT DISTINCT Banco_Cogido, Banco_Nombre, Banco_Direccion 
+FROM gd_esquema.Maestra WHERE Banco_Cogido IS NOT NULL
 
 PRINT 'Tabla Bancos creada correctamente'
 
@@ -195,8 +196,69 @@ GO
 
 CREATE TABLE CASI_COMPILA.Funcionalidades(
 	Func_Cod SMALLINT IDENTITY(1,1) PRIMARY KEY,
-	Func_Desc VARCHAR(255) NOT NULL
+	Func_Desc VARCHAR(40) NOT NULL
 )
+
+GO
+
+--Se insertan las funcionalidades
+
+INSERT INTO CASI_COMPILA.Funcionalidades
+(Func_Desc)
+VALUES
+('ABM DE ROL')
+
+--Login y seguridad no se considera una funcionalidad asignable a un rol, ya que todos la tienen
+
+INSERT INTO CASI_COMPILA.Funcionalidades
+(Func_Desc)
+VALUES
+('ABM DE USUARIO')
+
+INSERT INTO CASI_COMPILA.Funcionalidades
+(Func_Desc)
+VALUES
+('ABM DE CLIENTE')
+
+INSERT INTO CASI_COMPILA.Funcionalidades
+(Func_Desc)
+VALUES
+('ABM DE CUENTA')
+
+INSERT INTO CASI_COMPILA.Funcionalidades
+(Func_Desc)
+VALUES
+('ASOCIAR/DESASOCIAR TARJETAS DE CREDITO')
+
+INSERT INTO CASI_COMPILA.Funcionalidades
+(Func_Desc)
+VALUES
+('DEPOSITOS')
+
+INSERT INTO CASI_COMPILA.Funcionalidades
+(Func_Desc)
+VALUES
+('RETIRO DE EFECTIVO')
+
+INSERT INTO CASI_COMPILA.Funcionalidades
+(Func_Desc)
+VALUES
+('TRANSFERENCIAS ENTRE CUENTAS')
+
+INSERT INTO CASI_COMPILA.Funcionalidades
+(Func_Desc)
+VALUES
+('FACTURACION DE COSTOS')
+
+INSERT INTO CASI_COMPILA.Funcionalidades
+(Func_Desc)
+VALUES
+('CONSULTA DE SALDOS')
+
+INSERT INTO CASI_COMPILA.Funcionalidades
+(Func_Desc)
+VALUES
+('LISTADO ESTADISTICO')
 
 GO
 
@@ -226,7 +288,7 @@ END
 
 GO
 
---Se crea procedure para quitarle una funcion a un rol
+--Se crea procedure para quitarle una funcion a un rol                        CAMBIAR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 CREATE PROCEDURE CASI_COMPILA.Desasociar_Rol_Func
 (@Rol_Cod TINYINT, @Func_Cod SMALLINT)
@@ -239,7 +301,34 @@ END
 
 GO
 
+--Se asignan funcionalidades a los roles
+
+--El administrador tiene todas las funcionalidades
+
+DECLARE @Cod INT = 1
+
+WHILE(@Cod <= 11)   --Cantidad de funcionalidades: 11 (es fijo)
+BEGIN
+
+EXEC CASI_COMPILA.Asociar_Rol_Func @Rol_Cod = 1, @Func_Cod = @Cod
+SET @Cod = @Cod + 1
+
+END
+
+GO
+
+EXEC CASI_COMPILA.Asociar_Rol_Func @Rol_Cod = 2, @Func_Cod = 4 --ABM de cuenta
+EXEC CASI_COMPILA.Asociar_Rol_Func @Rol_Cod = 2, @Func_Cod = 5 --Asociar/Desasociar tarjetas de crédito
+EXEC CASI_COMPILA.Asociar_Rol_Func @Rol_Cod = 2, @Func_Cod = 6 --Depositos
+EXEC CASI_COMPILA.Asociar_Rol_Func @Rol_Cod = 2, @Func_Cod = 7 --Retiro de efectivo
+EXEC CASI_COMPILA.Asociar_Rol_Func @Rol_Cod = 2, @Func_Cod = 8 --Transferencias entre cuentas
+EXEC CASI_COMPILA.Asociar_Rol_Func @Rol_Cod = 2, @Func_Cod = 9 --Facturacion de costos
+EXEC CASI_COMPILA.Asociar_Rol_Func @Rol_Cod = 2, @Func_Cod = 10 --Consulta de saldos
+
+
 PRINT 'Tablas Funcionalidades y Funcionalidades_Rol creadas correctamente'
+
+GO
 
 -----------------------------------Usuarios----------------------------------------------
 
