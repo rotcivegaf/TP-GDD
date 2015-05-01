@@ -16,9 +16,9 @@ GO
 
 IF OBJECT_ID ('CASI_COMPILA.Cuentas') IS NOT NULL DROP TABLE CASI_COMPILA.Cuentas
 IF OBJECT_ID ('CASI_COMPILA.Tipos_Cuentas') IS NOT NULL DROP TABLE CASI_COMPILA.Tipos_Cuentas
-IF OBJECT_ID ('CASI_COMPILA.Funcionalidades_Rol') IS NOT NULL DROP TABLE CASI_COMPILA.Funcionalidades_Rol
+IF OBJECT_ID ('CASI_COMPILA.Funcionalidades_Roles') IS NOT NULL DROP TABLE CASI_COMPILA.Funcionalidades_Roles
 IF OBJECT_ID ('CASI_COMPILA.Funcionalidades') IS NOT NULL DROP TABLE CASI_COMPILA.Funcionalidades
-IF OBJECT_ID ('CASI_COMPILA.Usuarios_Rol') IS NOT NULL DROP TABLE CASI_COMPILA.Usuarios_Rol
+IF OBJECT_ID ('CASI_COMPILA.Usuarios_Roles') IS NOT NULL DROP TABLE CASI_COMPILA.Usuarios_Roles
 IF OBJECT_ID ('CASI_COMPILA.Usuarios') IS NOT NULL DROP TABLE CASI_COMPILA.Usuarios
 IF OBJECT_ID ('CASI_COMPILA.Roles') IS NOT NULL DROP TABLE CASI_COMPILA.Roles
 IF OBJECT_ID ('CASI_COMPILA.Clientes') IS NOT NULL DROP TABLE CASI_COMPILA.Clientes
@@ -264,7 +264,7 @@ GO
 
 --Como es muchos a muchos, se crea una tabla intermedia
 
-CREATE TABLE CASI_COMPILA.Funcionalidades_Rol(
+CREATE TABLE CASI_COMPILA.Funcionalidades_Roles(
 	Rol_Cod TINYINT NOT NULL FOREIGN KEY REFERENCES CASI_COMPILA.Roles,
 	Func_Cod SMALLINT NOT NULL FOREIGN KEY REFERENCES CASI_COMPILA.Funcionalidades,
 	PRIMARY KEY (Rol_Cod, Func_Cod) --De esta forma, no se puede repetir la funcion dentro de un rol
@@ -279,7 +279,7 @@ CREATE PROCEDURE CASI_COMPILA.Asociar_Rol_Func
 AS
 BEGIN
 
-INSERT INTO CASI_COMPILA.Funcionalidades_Rol
+INSERT INTO CASI_COMPILA.Funcionalidades_Roles
 (Rol_Cod, Func_Cod)
 VALUES
 (@Rol_Cod, @Func_Cod)
@@ -295,7 +295,7 @@ CREATE PROCEDURE CASI_COMPILA.Desasociar_Rol_Func
 AS
 BEGIN
 
-DELETE FROM CASI_COMPILA.Funcionalidades_Rol WHERE Rol_Cod = @Rol_Cod AND Func_Cod = @Func_Cod
+DELETE FROM CASI_COMPILA.Funcionalidades_Roles WHERE Rol_Cod = @Rol_Cod AND Func_Cod = @Func_Cod
 
 END 
 
@@ -351,7 +351,7 @@ GO
 
 --Entre usuarios y roles hay una relacion muchos a muchos
 
-CREATE TABLE CASI_COMPILA.Usuarios_Rol(
+CREATE TABLE CASI_COMPILA.Usuarios_Roles(
 	User_Cod NUMERIC(18,0) NOT NULL FOREIGN KEY REFERENCES CASI_COMPILA.Usuarios,
 	Rol_Cod TINYINT NOT NULL FOREIGN KEY REFERENCES CASI_COMPILA.Roles,
 	User_Rol_Estado BIT NOT NULL  --Un rol puede estar deshabilitado para un user, pero no implica que el rol se desactive en todo el sistema
