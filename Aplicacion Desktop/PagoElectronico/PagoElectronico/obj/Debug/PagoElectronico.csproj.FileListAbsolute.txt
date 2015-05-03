@@ -5,3 +5,5 @@ C:\Documents and Settings\UsuarioAdmin\Escritorio\TP-GDD.git\trunk\Aplicacion De
 C:\Documents and Settings\UsuarioAdmin\Escritorio\TP-GDD.git\trunk\Aplicacion Desktop\PagoElectronico\PagoElectronico\bin\Debug\PagoElectronico.pdb
 C:\Documents and Settings\UsuarioAdmin\Escritorio\TP-GDD.git\trunk\Aplicacion Desktop\PagoElectronico\PagoElectronico\obj\Debug\PagoElectronico.exe
 C:\Documents and Settings\UsuarioAdmin\Escritorio\TP-GDD.git\trunk\Aplicacion Desktop\PagoElectronico\PagoElectronico\obj\Debug\PagoElectronico.pdb
+C:\Documents and Settings\UsuarioAdmin\Mis documentos\TP-GDD.git\trunk\Aplicacion Desktop\PagoElectronico\PagoElectronico\obj\Debug\PagoElectronico.exe
+C:\Documents and Settings\UsuarioAdmin\Mis documentos\TP-GDD.git\trunk\Aplicacion Desktop\PagoElectronico\PagoElectronico\obj\Debug\PagoElectronico.pdb
