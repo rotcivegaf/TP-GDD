@@ -15,6 +15,7 @@ GO
 --Se borran todos los objetos previamente existentes
 
 IF OBJECT_ID ('CASI_COMPILA.Cuentas') IS NOT NULL DROP TABLE CASI_COMPILA.Cuentas
+IF OBJECT_ID ('CASI_COMPILA.Monedas') IS NOT NULL DROP TABLE CASI_COMPILA.Monedas
 IF OBJECT_ID ('CASI_COMPILA.Tipos_Cuentas') IS NOT NULL DROP TABLE CASI_COMPILA.Tipos_Cuentas
 IF OBJECT_ID ('CASI_COMPILA.Funcionalidades_Roles') IS NOT NULL DROP TABLE CASI_COMPILA.Funcionalidades_Roles
 IF OBJECT_ID ('CASI_COMPILA.Funcionalidades') IS NOT NULL DROP TABLE CASI_COMPILA.Funcionalidades
@@ -32,6 +33,7 @@ IF OBJECT_ID ('CASI_COMPILA.Desasociar_Rol_Func') IS NOT NULL DROP PROCEDURE CAS
 IF OBJECT_ID ('CASI_COMPILA.Alta_Usuario') IS NOT NULL DROP PROCEDURE CASI_COMPILA.Alta_Usuario
 IF OBJECT_ID ('CASI_COMPILA.Baja_Usuario') IS NOT NULL DROP PROCEDURE CASI_COMPILA.Baja_Usuario
 IF OBJECT_ID ('CASI_COMPILA.Asignar_Rol_Usuario') IS NOT NULL DROP PROCEDURE CASI_COMPILA.Asignar_Rol_Usuario
+IF OBJECT_ID ('CASI_COMPILA.Nueva_Moneda') IS NOT NULL DROP PROCEDURE CASI_COMPILA.Nueva_Moneda
 IF OBJECT_ID ('CASI_COMPILA.Cambiar_Estado') IS NOT NULL DROP FUNCTION CASI_COMPILA.Cambiar_Estado
 
 PRINT 'Tablas eliminadas correctamente'
@@ -372,7 +374,7 @@ CREATE PROCEDURE CASI_COMPILA.Asignar_Rol_Usuario
 AS
 BEGIN
 
-INSERT INTO CASI_COMPILA.Usuarios_Rol
+INSERT INTO CASI_COMPILA.Usuarios_Roles
 (User_Cod, Rol_Cod, User_Rol_Estado)
 VALUES
 (@Usuario, @Rol, 1) --Se asume que cuando se asigna un rol este se activa por defecto
@@ -407,8 +409,36 @@ END
 
 GO
 
+------------------------------------Monedas--------------------------------------------
 
-		
+CREATE TABLE CASI_COMPILA.Monedas(
+	Moneda_Codigo TINYINT IDENTITY(1,1) PRIMARY KEY,
+	Moneda_Desc VARCHAR(15) NOT NULL UNIQUE
+)
+
+GO
+
+CREATE PROCEDURE CASI_COMPILA.Nueva_Moneda
+(@Desc VARCHAR(15))
+AS
+BEGIN
+
+INSERT INTO CASI_COMPILA.Monedas
+(Moneda_Desc)
+VALUES
+(@Desc)
+
+END
+
+GO
+
+--Por ahora, la unica moneda es el dolar
+
+EXEC CASI_COMPILA.Nueva_Moneda @Desc = 'DOLAR'
+
+PRINT 'Tabla Monedas creada correctamente'
+
+GO		
 
 -----------------------------------Cuentas---------------------------------------------
 
@@ -430,7 +460,8 @@ CREATE TABLE CASI_COMPILA.Cuentas(
 	Cuenta_Pais_Codigo  NUMERIC(18,0) NOT NULL FOREIGN KEY REFERENCES CASI_COMPILA.Paises,
 	Cuenta_Fecha_Cierre DATETIME,
 	Cuenta_Cli_Codigo NUMERIC(18,0) NOT NULL FOREIGN KEY REFERENCES CASI_COMPILA.Clientes,
-	Cuenta_Tipo_Cod TINYINT FOREIGN KEY REFERENCES CASI_COMPILA.Tipos_Cuentas --Tendria que ser NOT NULL, lo dejo asi xq en la tabla maestra no estan los tipos asociados a cada cuenta
+	Cuenta_Tipo_Cod TINYINT FOREIGN KEY REFERENCES CASI_COMPILA.Tipos_Cuentas, --Tendria que ser NOT NULL, lo dejo asi xq en la tabla maestra no estan los tipos asociados a cada cuenta
+	Cuenta_Moneda_Codigo TINYINT NOT NULL FOREIGN KEY REFERENCES CASI_COMPILA.Monedas
 	)
 
 PRINT 'Tabla Cuentas creada correctamente'
