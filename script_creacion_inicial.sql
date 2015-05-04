@@ -391,8 +391,8 @@ DECLARE @Cli_Cod NUMERIC(18,0)
 DECLARE @Cli_Nombre VARCHAR(255)
 DECLARE @Cli_Apellido VARCHAR(255)
 DECLARE @User VARCHAR(255)
-
 DECLARE Cli_Cursor CURSOR FOR SELECT c.Cli_Codigo, c.Cli_Nombre, c.Cli_Apellido FROM CASI_COMPILA.Clientes c
+
 OPEN Cli_Cursor FETCH NEXT FROM Cli_Cursor INTO @Cli_Cod, @Cli_Nombre, @Cli_Apellido
 WHILE @@FETCH_STATUS = 0
 BEGIN
