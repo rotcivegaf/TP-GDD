@@ -14,6 +14,7 @@ GO
 
 --Se borran todos los objetos previamente existentes
 
+IF OBJECT_ID ('CASI_COMPILA.Transferencias') IS NOT NULL DROP TABLE CASI_COMPILA.Transferencias
 IF OBJECT_ID ('CASI_COMPILA.Cuentas') IS NOT NULL DROP TABLE CASI_COMPILA.Cuentas
 IF OBJECT_ID ('CASI_COMPILA.Estados_Cuentas') IS NOT NULL DROP TABLE CASI_COMPILA.Estados_Cuentas
 IF OBJECT_ID ('CASI_COMPILA.Monedas') IS NOT NULL DROP TABLE CASI_COMPILA.Monedas
@@ -194,7 +195,7 @@ GO
 
 --Se cargan los 2 roles iniciales (Administrador y Cliente)
 
-EXEC CASI_COMPILA.Alta_Rol @Nombre = 'ADMINISTRADOR', @Estado = 1
+EXEC CASI_COMPILA.Alta_Rol @Nombre = 'ADMINISTRADOR GENERAL', @Estado = 1
 EXEC CASI_COMPILA.Alta_Rol @Nombre = 'CLIENTE', @Estado = 1
 
 PRINT 'Tabla Roles creada correctamente'
@@ -301,7 +302,6 @@ CREATE TABLE CASI_COMPILA.Usuarios(
 	User_Cod NUMERIC(18,0) IDENTITY(1,1) PRIMARY KEY,
 	User_Nombre VARCHAR(50) NOT NULL UNIQUE,
 	User_Password VARCHAR(50) NOT NULL,
-	User_Rol_Cod TINYINT NOT NULL FOREIGN KEY REFERENCES CASI_COMPILA.Roles,
 	User_Fecha_Creacion DATETIME NOT NULL,
 	User_Fecha_Mod DATETIME NOT NULL,
 	User_Preg_Secreta VARCHAR(255) NOT NULL,
@@ -309,8 +309,6 @@ CREATE TABLE CASI_COMPILA.Usuarios(
 	User_Cli_Codigo NUMERIC(18,0) UNIQUE FOREIGN KEY REFERENCES CASI_COMPILA.Clientes, --Puede ser null si es admin
 	User_Estado BIT NOT NULL -- 1= ACTIVO 0 = INACTIVO
 	)
-	
---Hay que cargarle LOS usuarios (1 por cada cliente + los admin)!!!!!!!!!
 
 GO
 
@@ -319,6 +317,7 @@ GO
 CREATE TABLE CASI_COMPILA.Usuarios_Roles(
 	User_Cod NUMERIC(18,0) NOT NULL FOREIGN KEY REFERENCES CASI_COMPILA.Usuarios,
 	Rol_Cod TINYINT NOT NULL FOREIGN KEY REFERENCES CASI_COMPILA.Roles,
+	PRIMARY KEY (User_Cod, Rol_Cod),
 	User_Rol_Estado BIT NOT NULL  --Un rol puede estar deshabilitado para un user, pero no implica que el rol se desactive en todo el sistema
 )
 
@@ -347,15 +346,20 @@ END
 GO
 
 CREATE PROCEDURE CASI_COMPILA.Alta_Usuario
-(@Nombre VARCHAR(50), @Password VARCHAR(50), @Rol TINYINT, @PregSecreta VARCHAR(255), 
+(@Nombre VARCHAR(50), @Password VARCHAR(50), @User_Rol TINYINT, @PregSecreta VARCHAR(255), 
 @RespSecreta VARCHAR(255), @Cliente NUMERIC(18,0) = NULL) --Si es admin y no es cliente, no se ingresa el parametro
+														  --Inicialmente tiene un solo rol, despues se pueden agregar mas
 AS
 BEGIN
 
 INSERT INTO CASI_COMPILA.Usuarios
 (User_Nombre, User_Password, User_Fecha_Creacion, User_Fecha_Mod, User_Preg_Secreta, User_Resp_Secreta, User_Cli_Codigo,User_Estado)
 VALUES
-(@Nombre, @Password, GETDATE(), GETDATE(), @PregSecreta, @RespSecreta, @Cliente, 1) --El rol se asigna aparte
+(@Nombre, @Password, GETDATE(), GETDATE(), @PregSecreta, @RespSecreta, @Cliente, 1) --Cuando se cre, por defecto esta activado
+
+DECLARE @User_Cod NUMERIC(18,0) = SCOPE_IDENTITY() --Obtiene el ultimo codigo de usuario generado
+
+EXEC CASI_COMPILA.Asignar_Rol_Usuario @Usuario = @User_Cod, @Rol = @User_Rol
 
 END
 
@@ -371,6 +375,11 @@ UPDATE CASI_COMPILA.Usuarios  SET User_Estado = 0, User_Fecha_Mod = GETDATE() WH
 END
 
 GO
+
+--Se crea el usuario admin pedido
+
+EXEC CASI_COMPILA.Alta_Usuario @Nombre = 'admin', @Password = 'w23e', @User_Rol = 1,
+@PregSecreta = '', @RespSecreta = ''
 
 ------------------------------------Monedas--------------------------------------------
 
