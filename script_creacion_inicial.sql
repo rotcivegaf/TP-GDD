@@ -24,6 +24,7 @@ IF OBJECT_ID ('CASI_COMPILA.Usuarios_Roles') IS NOT NULL DROP TABLE CASI_COMPILA
 IF OBJECT_ID ('CASI_COMPILA.Usuarios') IS NOT NULL DROP TABLE CASI_COMPILA.Usuarios
 IF OBJECT_ID ('CASI_COMPILA.Roles') IS NOT NULL DROP TABLE CASI_COMPILA.Roles
 IF OBJECT_ID ('CASI_COMPILA.Tarjetas') IS NOT NULL DROP TABLE CASI_COMPILA.Tarjetas
+IF OBJECT_ID ('CASI_COMPILA.Emisores_Tarjetas') IS NOT NULL DROP TABLE CASI_COMPILA.Emisores_Tarjetas
 IF OBJECT_ID ('CASI_COMPILA.Clientes') IS NOT NULL DROP TABLE CASI_COMPILA.Clientes
 IF OBJECT_ID ('CASI_COMPILA.Paises') IS NOT NULL DROP TABLE CASI_COMPILA.Paises
 IF OBJECT_ID ('CASI_COMPILA.Tipos_Documento') IS NOT NULL DROP TABLE CASI_COMPILA.Tipos_Documento
@@ -468,17 +469,54 @@ GO
 
 -------------------------------------------Tarjetas----------------------------------------
 
+CREATE TABLE CASI_COMPILA.Emisores_Tarjetas(
+	Emisor_Cod TINYINT IDENTITY(1,1) PRIMARY KEY,
+	Emisor_Desc VARCHAR(255) NOT NULL UNIQUE
+)
+
+GO
+
+--Se cargan los emisores desde la tabla maestra
+
+INSERT INTO CASI_COMPILA.Emisores_Tarjetas
+(Emisor_Desc)
+SELECT DISTINCT Tarjeta_Emisor_Descripcion FROM gd_esquema.Maestra WHERE Tarjeta_Emisor_Descripcion IS NOT NULL
+
+GO
+
+PRINT 'Tabla emisores de tarjetas creada correctamente'
+
 CREATE TABLE CASI_COMPILA.Tarjetas(
-	Tarj_Num NUMERIC(16,0) PRIMARY KEY,
-	--Tarj_Cod_Emisor    ¿es el banco?
-	Tarj_Fecha_Emision DATETIME NOT NULL,
-	Tarj_Fecha_Vencimiento DATETIME NOT NULL,
-	Tarj_Cod_Seg NUMERIC(3,0) NOT NULL,
+	Tarjeta_Numero VARCHAR(16) PRIMARY KEY,
+	Tarj_Emisor_Cod TINYINT NOT NULL FOREIGN KEY REFERENCES CASI_COMPILA.Emisores_Tarjetas,
+	Tarjeta_Fecha_Emision DATETIME NOT NULL,
+	Tarjeta_Fecha_Vencimiento DATETIME NOT NULL,
+	Tarjeta_Codigo_Seg VARCHAR(3) NOT NULL,
 	Tarj_Cli_Codigo NUMERIC(18,0) NOT NULL FOREIGN KEY REFERENCES CASI_COMPILA.Clientes
 )
 
+
+--Falta levantar los datos de las tarjetas
+
 PRINT 'Tabla Tarjetas creada correctamente'
 
+GO
+
+--------------------------------------Transferencias---------------------------------------
+
+CREATE TABLE CASI_COMPILA.Transferencias(
+	Transf_Cod NUMERIC(18,0) IDENTITY(1,1) PRIMARY KEY,
+	Transf_Cta_Origen NUMERIC(18,0) NOT NULL FOREIGN KEY REFERENCES CASI_COMPILA.Cuentas,
+	Transf_Cta_Dest NUMERIC(18,0) NOT NULL FOREIGN KEY REFERENCES CASI_COMPILA.Cuentas,
+	Transf_Fecha DATETIME NOT NULL,
+	Tranf_Importe NUMERIC(18,2) NOT NULL,
+	Tranf_Costo NUMERIC(18,2)
+)
+
+--Falta cargar las transferencias de la tabla maestra
+
+
+PRINT 'Tabla transferencias creada correctamente'
 
 
 
