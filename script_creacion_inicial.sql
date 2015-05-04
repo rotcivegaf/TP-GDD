@@ -15,6 +15,7 @@ GO
 --Se borran todos los objetos previamente existentes
 
 IF OBJECT_ID ('CASI_COMPILA.Cuentas') IS NOT NULL DROP TABLE CASI_COMPILA.Cuentas
+IF OBJECT_ID ('CASI_COMPILA.Estados_Cuentas') IS NOT NULL DROP TABLE CASI_COMPILA.Estados_Cuentas
 IF OBJECT_ID ('CASI_COMPILA.Monedas') IS NOT NULL DROP TABLE CASI_COMPILA.Monedas
 IF OBJECT_ID ('CASI_COMPILA.Tipos_Cuentas') IS NOT NULL DROP TABLE CASI_COMPILA.Tipos_Cuentas
 IF OBJECT_ID ('CASI_COMPILA.Funcionalidades_Roles') IS NOT NULL DROP TABLE CASI_COMPILA.Funcionalidades_Roles
@@ -22,6 +23,7 @@ IF OBJECT_ID ('CASI_COMPILA.Funcionalidades') IS NOT NULL DROP TABLE CASI_COMPIL
 IF OBJECT_ID ('CASI_COMPILA.Usuarios_Roles') IS NOT NULL DROP TABLE CASI_COMPILA.Usuarios_Roles
 IF OBJECT_ID ('CASI_COMPILA.Usuarios') IS NOT NULL DROP TABLE CASI_COMPILA.Usuarios
 IF OBJECT_ID ('CASI_COMPILA.Roles') IS NOT NULL DROP TABLE CASI_COMPILA.Roles
+IF OBJECT_ID ('CASI_COMPILA.Tarjetas') IS NOT NULL DROP TABLE CASI_COMPILA.Tarjetas
 IF OBJECT_ID ('CASI_COMPILA.Clientes') IS NOT NULL DROP TABLE CASI_COMPILA.Clientes
 IF OBJECT_ID ('CASI_COMPILA.Paises') IS NOT NULL DROP TABLE CASI_COMPILA.Paises
 IF OBJECT_ID ('CASI_COMPILA.Tipos_Documento') IS NOT NULL DROP TABLE CASI_COMPILA.Tipos_Documento
@@ -29,12 +31,14 @@ IF OBJECT_ID ('CASI_COMPILA.Bancos') IS NOT NULL DROP TABLE CASI_COMPILA.Bancos
 IF OBJECT_ID ('CASI_COMPILA.Alta_Rol') IS NOT NULL DROP PROCEDURE CASI_COMPILA.Alta_Rol
 IF OBJECT_ID ('CASI_COMPILA.Mod_Estado_Rol') IS NOT NULL DROP PROCEDURE CASI_COMPILA.Mod_Estado_Rol
 IF OBJECT_ID ('CASI_COMPILA.Asociar_Rol_Func') IS NOT NULL DROP PROCEDURE CASI_COMPILA.Asociar_Rol_Func
-IF OBJECT_ID ('CASI_COMPILA.Desasociar_Rol_Func') IS NOT NULL DROP PROCEDURE CASI_COMPILA.Desasociar_Rol_Func
 IF OBJECT_ID ('CASI_COMPILA.Alta_Usuario') IS NOT NULL DROP PROCEDURE CASI_COMPILA.Alta_Usuario
 IF OBJECT_ID ('CASI_COMPILA.Baja_Usuario') IS NOT NULL DROP PROCEDURE CASI_COMPILA.Baja_Usuario
 IF OBJECT_ID ('CASI_COMPILA.Asignar_Rol_Usuario') IS NOT NULL DROP PROCEDURE CASI_COMPILA.Asignar_Rol_Usuario
 IF OBJECT_ID ('CASI_COMPILA.Nueva_Moneda') IS NOT NULL DROP PROCEDURE CASI_COMPILA.Nueva_Moneda
+IF OBJECT_ID ('CASI_COMPILA.Agregar_Estado_Cuenta') IS NOT NULL DROP PROCEDURE CASI_COMPILA.Agregar_Estado_Cuenta
+IF OBJECT_ID ('CASI_COMPILA.Agregar_Funcionalidad') IS NOT NULL DROP PROCEDURE CASI_COMPILA.Agregar_Funcionalidad
 IF OBJECT_ID ('CASI_COMPILA.Cambiar_Estado') IS NOT NULL DROP FUNCTION CASI_COMPILA.Cambiar_Estado
+
 
 PRINT 'Tablas eliminadas correctamente'
 GO
@@ -68,12 +72,16 @@ GO
 
 CREATE TABLE CASI_COMPILA.Paises (
 	Pais_Codigo NUMERIC(18,0) PRIMARY KEY,
-	Pais_Desc VARCHAR(250) NOT NULL
+	Pais_Desc VARCHAR(250) NOT NULL UNIQUE
 	)
+
+--Esto se hace porque hay paises que aparecen en cuentas y no en clientes
 
 INSERT INTO CASI_COMPILA.Paises
 (Pais_Codigo, Pais_Desc)
-SELECT DISTINCT Cli_Pais_Codigo, Cli_Pais_Desc FROM gd_esquema.Maestra
+SELECT * FROM (SELECT Cli_Pais_Codigo, Cli_Pais_Desc FROM gd_esquema.Maestra 
+UNION SELECT Cuenta_Pais_Codigo, Cuenta_Pais_Desc FROM gd_esquema.Maestra) AS P
+
 
 PRINT 'Tabla Paises creada correctamente'
 
@@ -138,8 +146,6 @@ SELECT DISTINCT Cli_Nombre, Cli_Apellido, Cli_Pais_Codigo, Cli_Tipo_Doc_Cod, Cli
 Cli_Dom_Nro, Cli_Dom_Piso, Cli_Dom_Depto, Cli_Fecha_Nac, Cli_Mail FROM gd_esquema.Maestra
 
 
---En esta tabla hay que generar un indice para mayor performance
-
 
 PRINT 'Tabla Clientes creada correctamente'
 
@@ -203,64 +209,33 @@ CREATE TABLE CASI_COMPILA.Funcionalidades(
 
 GO
 
+CREATE PROCEDURE CASI_COMPILA.Agregar_Funcionalidad
+(@Desc VARCHAR(40))
+AS
+BEGIN
+
+INSERT INTO CASI_COMPILA.Funcionalidades
+(Func_Desc)
+VALUES
+(@Desc)
+
+END
+
+GO
+
 --Se insertan las funcionalidades
 
-INSERT INTO CASI_COMPILA.Funcionalidades
-(Func_Desc)
-VALUES
-('ABM DE ROL')
-
---Login y seguridad no se considera una funcionalidad asignable a un rol, ya que todos la tienen
-
-INSERT INTO CASI_COMPILA.Funcionalidades
-(Func_Desc)
-VALUES
-('ABM DE USUARIO')
-
-INSERT INTO CASI_COMPILA.Funcionalidades
-(Func_Desc)
-VALUES
-('ABM DE CLIENTE')
-
-INSERT INTO CASI_COMPILA.Funcionalidades
-(Func_Desc)
-VALUES
-('ABM DE CUENTA')
-
-INSERT INTO CASI_COMPILA.Funcionalidades
-(Func_Desc)
-VALUES
-('ASOCIAR/DESASOCIAR TARJETAS DE CREDITO')
-
-INSERT INTO CASI_COMPILA.Funcionalidades
-(Func_Desc)
-VALUES
-('DEPOSITOS')
-
-INSERT INTO CASI_COMPILA.Funcionalidades
-(Func_Desc)
-VALUES
-('RETIRO DE EFECTIVO')
-
-INSERT INTO CASI_COMPILA.Funcionalidades
-(Func_Desc)
-VALUES
-('TRANSFERENCIAS ENTRE CUENTAS')
-
-INSERT INTO CASI_COMPILA.Funcionalidades
-(Func_Desc)
-VALUES
-('FACTURACION DE COSTOS')
-
-INSERT INTO CASI_COMPILA.Funcionalidades
-(Func_Desc)
-VALUES
-('CONSULTA DE SALDOS')
-
-INSERT INTO CASI_COMPILA.Funcionalidades
-(Func_Desc)
-VALUES
-('LISTADO ESTADISTICO')
+EXEC CASI_COMPILA.Agregar_Funcionalidad @Desc = 'ABM DE ROL'
+EXEC CASI_COMPILA.Agregar_Funcionalidad @Desc = 'ABM DE USUARIO'
+EXEC CASI_COMPILA.Agregar_Funcionalidad @Desc = 'ABM DE CLIENTE'
+EXEC CASI_COMPILA.Agregar_Funcionalidad @Desc = 'ABM DE CUENTA'
+EXEC CASI_COMPILA.Agregar_Funcionalidad @Desc = 'ASOCIAR/DESASOCIAR TARJETAS DE CREDITO'
+EXEC CASI_COMPILA.Agregar_Funcionalidad @Desc = 'DEPOSITOS'
+EXEC CASI_COMPILA.Agregar_Funcionalidad @Desc = 'RETIRO DE EFECTIVO'
+EXEC CASI_COMPILA.Agregar_Funcionalidad @Desc = 'TRANSFERENCIAS ENTRE CUENTAS'
+EXEC CASI_COMPILA.Agregar_Funcionalidad @Desc = 'FACTURACION DE COSTOS'
+EXEC CASI_COMPILA.Agregar_Funcionalidad @Desc = 'CONSULTA DE SALDOS'
+EXEC CASI_COMPILA.Agregar_Funcionalidad @Desc = 'LISTADO ESTADISTICO'
 
 GO
 
@@ -285,19 +260,6 @@ INSERT INTO CASI_COMPILA.Funcionalidades_Roles
 (Rol_Cod, Func_Cod)
 VALUES
 (@Rol_Cod, @Func_Cod)
-
-END 
-
-GO
-
---Se crea procedure para quitarle una funcion a un rol                        CAMBIAR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-CREATE PROCEDURE CASI_COMPILA.Desasociar_Rol_Func
-(@Rol_Cod TINYINT, @Func_Cod SMALLINT)
-AS
-BEGIN
-
-DELETE FROM CASI_COMPILA.Funcionalidades_Roles WHERE Rol_Cod = @Rol_Cod AND Func_Cod = @Func_Cod
 
 END 
 
@@ -447,26 +409,75 @@ GO
 CREATE TABLE CASI_COMPILA.Tipos_Cuentas(
 	Tipo_Cod TINYINT IDENTITY(1,1) PRIMARY KEY,
 	Tipo_Nombre VARCHAR(50) NOT NULL UNIQUE,
-	Tipo_Dias_Restantes SMALLINT NOT NULL,
+	Tipo_Dias_Duracion SMALLINT NOT NULL,
 	Tipo_Costo NUMERIC(10,2)
 )
+
+GO
+
+--Posibles estados de una cuenta
+
+CREATE TABLE CASI_COMPILA.Estados_Cuentas(
+	Estado_Codigo TINYINT IDENTITY(1,1) PRIMARY KEY,
+	Estado_Desc VARCHAR(25) NOT NULL UNIQUE
+)
+
+GO
+
+CREATE PROCEDURE CASI_COMPILA.Agregar_Estado_Cuenta
+(@Desc VARCHAR(25))
+AS
+BEGIN
+
+INSERT INTO CASI_COMPILA.Estados_Cuentas
+(Estado_Desc)
+VALUES
+(@Desc)
+
+END
+
+GO
+
+EXEC CASI_COMPILA.Agregar_Estado_Cuenta @Desc = 'PENDIENTE DE ACTIVACION'
+EXEC CASI_COMPILA.Agregar_Estado_Cuenta @Desc = 'CERRADA'
+EXEC CASI_COMPILA.Agregar_Estado_Cuenta @Desc = 'INHABILITADA'
+EXEC CASI_COMPILA.Agregar_Estado_Cuenta @Desc = 'HABILITADA'
+
+GO
 
 --REVISAR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 CREATE TABLE CASI_COMPILA.Cuentas(
 	Cuenta_Numero NUMERIC(18,0) PRIMARY KEY,
 	Cuenta_Fecha_Creacion DATETIME NOT NULL,
-	Cuenta_Estado VARCHAR(255) CHECK(Cuenta_Estado IN ('PENDIENTE DE ACTIVACION', 'CERRADA', 'INHABILITADA', 'HABILITADA')),
+	Cuenta_Estado_Cod TINYINT NOT NULL FOREIGN KEY REFERENCES CASI_COMPILA.Estados_Cuentas,
 	Cuenta_Pais_Codigo  NUMERIC(18,0) NOT NULL FOREIGN KEY REFERENCES CASI_COMPILA.Paises,
 	Cuenta_Fecha_Cierre DATETIME,
 	Cuenta_Cli_Codigo NUMERIC(18,0) NOT NULL FOREIGN KEY REFERENCES CASI_COMPILA.Clientes,
 	Cuenta_Tipo_Cod TINYINT FOREIGN KEY REFERENCES CASI_COMPILA.Tipos_Cuentas, --Tendria que ser NOT NULL, lo dejo asi xq en la tabla maestra no estan los tipos asociados a cada cuenta
 	Cuenta_Moneda_Codigo TINYINT NOT NULL FOREIGN KEY REFERENCES CASI_COMPILA.Monedas
 	)
+	
+GO
 
 PRINT 'Tabla Cuentas creada correctamente'
 	
 --Hay que cargar los datos de la tabla!!!!
+
+GO
+
+-------------------------------------------Tarjetas----------------------------------------
+
+CREATE TABLE CASI_COMPILA.Tarjetas(
+	Tarj_Num NUMERIC(16,0) PRIMARY KEY,
+	--Tarj_Cod_Emisor    ¿es el banco?
+	Tarj_Fecha_Emision DATETIME NOT NULL,
+	Tarj_Fecha_Vencimiento DATETIME NOT NULL,
+	Tarj_Cod_Seg NUMERIC(3,0) NOT NULL,
+	Tarj_Cli_Codigo NUMERIC(18,0) NOT NULL FOREIGN KEY REFERENCES CASI_COMPILA.Clientes
+)
+
+PRINT 'Tabla Tarjetas creada correctamente'
 
 
 
