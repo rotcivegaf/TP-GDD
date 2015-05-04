@@ -301,7 +301,7 @@ GO
 CREATE TABLE CASI_COMPILA.Usuarios(
 	User_Cod NUMERIC(18,0) IDENTITY(1,1) PRIMARY KEY,
 	User_Nombre VARCHAR(50) NOT NULL UNIQUE,
-	User_Password VARCHAR(50) NOT NULL,
+	User_Password VARCHAR(255) NOT NULL,
 	User_Fecha_Creacion DATETIME NOT NULL,
 	User_Fecha_Mod DATETIME NOT NULL,
 	User_Preg_Secreta VARCHAR(255) NOT NULL,
@@ -376,10 +376,13 @@ END
 
 GO
 
---Se crea el usuario admin pedido
+--Se crea el usuario admin pedido (pass y respuesta secreta con encriptacion SHA256)
 
-EXEC CASI_COMPILA.Alta_Usuario @Nombre = 'admin', @Password = 'w23e', @User_Rol = 1,
-@PregSecreta = '', @RespSecreta = ''
+EXEC CASI_COMPILA.Alta_Usuario @Nombre = 'admin', 
+@Password = 'E6-B8-70-50-BF-CB-81-43-FC-B8-DB-01-70-A4-DC-9E-D0-0D-90-4D-DD-3E-2A-4A-D1-B1-E8-DC-0F-DC-9B-E7',  --w23e
+@User_Rol = 1,
+@PregSecreta = '¿Que dia cursa gestion de datos?', 
+@RespSecreta = 'DB-30-E7-7B-9F-80-EA-07-07-DA-0C-71-D1-1F-99-35-93-5D-F5-98-90-F3-89-95-C0-6E-BE-06-2B-27-32-56' --sabado
 
 ------------------------------------Monedas--------------------------------------------
 
