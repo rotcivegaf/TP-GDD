@@ -170,10 +170,10 @@ CREATE PROCEDURE CASI_COMPILA.Alta_Rol
 AS
 BEGIN
 
-INSERT INTO CASI_COMPILA.Roles
-(Rol_Nombre, Rol_Estado)
-VALUES
-(@Nombre, @Estado)
+	INSERT INTO CASI_COMPILA.Roles
+	(Rol_Nombre, Rol_Estado)
+	VALUES
+	(@Nombre, @Estado)
 
 END
 
@@ -184,7 +184,7 @@ CREATE PROCEDURE CASI_COMPILA.Mod_Estado_Rol
 AS
 BEGIN
 
-UPDATE CASI_COMPILA.Roles SET Rol_Estado = CASI_COMPILA.Cambiar_Estado(Rol_Estado) WHERE Rol_Cod = @Rol_Cod
+	UPDATE CASI_COMPILA.Roles SET Rol_Estado = CASI_COMPILA.Cambiar_Estado(Rol_Estado) WHERE Rol_Cod = @Rol_Cod
 
 END
 
@@ -216,10 +216,10 @@ CREATE PROCEDURE CASI_COMPILA.Agregar_Funcionalidad
 AS
 BEGIN
 
-INSERT INTO CASI_COMPILA.Funcionalidades
-(Func_Desc)
-VALUES
-(@Desc)
+	INSERT INTO CASI_COMPILA.Funcionalidades
+	(Func_Desc)
+	VALUES
+	(@Desc)
 
 END
 
@@ -258,10 +258,10 @@ CREATE PROCEDURE CASI_COMPILA.Asociar_Rol_Func
 AS
 BEGIN
 
-INSERT INTO CASI_COMPILA.Funcionalidades_Roles
-(Rol_Cod, Func_Cod)
-VALUES
-(@Rol_Cod, @Func_Cod)
+	INSERT INTO CASI_COMPILA.Funcionalidades_Roles
+	(Rol_Cod, Func_Cod)
+	VALUES
+	(@Rol_Cod, @Func_Cod)
 
 END 
 
@@ -276,8 +276,8 @@ DECLARE @Cod INT = 1
 WHILE(@Cod <= 11)   --Cantidad de funcionalidades: 11 (es fijo)
 BEGIN
 
-EXEC CASI_COMPILA.Asociar_Rol_Func @Rol_Cod = 1, @Func_Cod = @Cod
-SET @Cod = @Cod + 1
+	EXEC CASI_COMPILA.Asociar_Rol_Func @Rol_Cod = 1, @Func_Cod = @Cod
+	SET @Cod = @Cod + 1
 
 END
 
@@ -322,10 +322,6 @@ CREATE TABLE CASI_COMPILA.Usuarios_Roles(
 )
 
 GO
-	
-PRINT 'Tabla Usuarios y Tabla Usuarios_Rol creada correctamente'
-
-GO
 
 --ABM Usuario
 
@@ -336,30 +332,30 @@ CREATE PROCEDURE CASI_COMPILA.Asignar_Rol_Usuario
 AS
 BEGIN
 
-INSERT INTO CASI_COMPILA.Usuarios_Roles
-(User_Cod, Rol_Cod, User_Rol_Estado)
-VALUES
-(@Usuario, @Rol, 1) --Se asume que cuando se asigna un rol este se activa por defecto
+	INSERT INTO CASI_COMPILA.Usuarios_Roles
+	(User_Cod, Rol_Cod, User_Rol_Estado)
+	VALUES
+	(@Usuario, @Rol, 1) --Se asume que cuando se asigna un rol este se activa por defecto
 
 END
 
 GO
 
-CREATE PROCEDURE CASI_COMPILA.Alta_Usuario
+CREATE PROCEDURE CASI_COMPILA.Alta_Usuario --El password y la respuesta secreta deben llegar encriptadas
 (@Nombre VARCHAR(50), @Password VARCHAR(50), @User_Rol TINYINT, @PregSecreta VARCHAR(255), 
 @RespSecreta VARCHAR(255), @Cliente NUMERIC(18,0) = NULL) --Si es admin y no es cliente, no se ingresa el parametro
 														  --Inicialmente tiene un solo rol, despues se pueden agregar mas
 AS
 BEGIN
 
-INSERT INTO CASI_COMPILA.Usuarios
-(User_Nombre, User_Password, User_Fecha_Creacion, User_Fecha_Mod, User_Preg_Secreta, User_Resp_Secreta, User_Cli_Codigo,User_Estado)
-VALUES
-(@Nombre, @Password, GETDATE(), GETDATE(), @PregSecreta, @RespSecreta, @Cliente, 1) --Cuando se cre, por defecto esta activado
+	INSERT INTO CASI_COMPILA.Usuarios
+	(User_Nombre, User_Password, User_Fecha_Creacion, User_Fecha_Mod, User_Preg_Secreta, User_Resp_Secreta, User_Cli_Codigo,User_Estado)
+	VALUES
+	(@Nombre, @Password, GETDATE(), GETDATE(), @PregSecreta, @RespSecreta, @Cliente, 1) --Cuando se cre, por defecto esta activado
 
-DECLARE @User_Cod NUMERIC(18,0) = SCOPE_IDENTITY() --Obtiene el ultimo codigo de usuario generado
+	DECLARE @User_Cod NUMERIC(18,0) = SCOPE_IDENTITY() --Obtiene el ultimo codigo de usuario generado
 
-EXEC CASI_COMPILA.Asignar_Rol_Usuario @Usuario = @User_Cod, @Rol = @User_Rol
+	EXEC CASI_COMPILA.Asignar_Rol_Usuario @Usuario = @User_Cod, @Rol = @User_Rol
 
 END
 
@@ -370,7 +366,7 @@ CREATE PROCEDURE CASI_COMPILA.Baja_Usuario
 AS
 BEGIN
 
-UPDATE CASI_COMPILA.Usuarios  SET User_Estado = 0, User_Fecha_Mod = GETDATE() WHERE User_Cod = @User_Cod
+	UPDATE CASI_COMPILA.Usuarios  SET User_Estado = 0, User_Fecha_Mod = GETDATE() WHERE User_Cod = @User_Cod
 
 END
 
@@ -383,6 +379,35 @@ EXEC CASI_COMPILA.Alta_Usuario @Nombre = 'admin',
 @User_Rol = 1,
 @PregSecreta = '¿Que dia cursa gestion de datos?', 
 @RespSecreta = 'DB-30-E7-7B-9F-80-EA-07-07-DA-0C-71-D1-1F-99-35-93-5D-F5-98-90-F3-89-95-C0-6E-BE-06-2B-27-32-56' --sabado
+
+
+GO
+
+--Por cada cliente en la tabla de clientes, genero un usuario (nombre user = nombre + apellido en minuscula)
+
+--Falta definir passwords y preg secreta
+
+DECLARE @Cli_Cod NUMERIC(18,0)
+DECLARE @Cli_Nombre VARCHAR(255)
+DECLARE @Cli_Apellido VARCHAR(255)
+DECLARE @User VARCHAR(255)
+
+DECLARE Cli_Cursor CURSOR FOR SELECT c.Cli_Codigo, c.Cli_Nombre, c.Cli_Apellido FROM CASI_COMPILA.Clientes c
+OPEN Cli_Cursor FETCH NEXT FROM Cli_Cursor INTO @Cli_Cod, @Cli_Nombre, @Cli_Apellido
+WHILE @@FETCH_STATUS = 0
+BEGIN
+	SET @User = LOWER(@Cli_Nombre + @Cli_Apellido)
+	EXEC CASI_COMPILA.Alta_Usuario @Nombre = @User, @Password = '',
+	@User_Rol = 2, @PregSecreta = '', @RespSecreta = '', @Cliente = @Cli_Cod
+	FETCH NEXT FROM Cli_Cursor INTO @Cli_Cod, @Cli_Nombre, @Cli_Apellido
+END
+CLOSE Cli_Cursor
+DEALLOCATE Cli_Cursor
+	
+	
+PRINT 'Tabla Usuarios y Tabla Usuarios_Rol creada correctamente'
+
+GO
 
 ------------------------------------Monedas--------------------------------------------
 
@@ -398,10 +423,10 @@ CREATE PROCEDURE CASI_COMPILA.Nueva_Moneda
 AS
 BEGIN
 
-INSERT INTO CASI_COMPILA.Monedas
-(Moneda_Desc)
-VALUES
-(@Desc)
+	INSERT INTO CASI_COMPILA.Monedas
+	(Moneda_Desc)
+	VALUES
+	(@Desc)
 
 END
 
@@ -442,10 +467,10 @@ CREATE PROCEDURE CASI_COMPILA.Agregar_Estado_Cuenta
 AS
 BEGIN
 
-INSERT INTO CASI_COMPILA.Estados_Cuentas
-(Estado_Desc)
-VALUES
-(@Desc)
+	INSERT INTO CASI_COMPILA.Estados_Cuentas
+	(Estado_Desc)
+	VALUES
+	(@Desc)
 
 END
 
